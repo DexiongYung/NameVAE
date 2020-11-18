@@ -9,8 +9,6 @@ parser.add_argument('--name',
                     help='Session name', type=str, default='TF')
 parser.add_argument('--test_name',
                     help='Person name to test', type=str, default='Michael')
-parser.add_argument('--weight_dir', help='save dir',
-                    type=str, default='weight/')
 parser.add_argument('--eps', help='error from sampling',
                     type=float, default=1e-2)
 args = parser.parse_args()

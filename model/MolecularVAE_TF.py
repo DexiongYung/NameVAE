@@ -43,9 +43,9 @@ class MolecularVAE(nn.Module):
             self.latent_size, self.latent_size)
 
         self.gru = nn.GRU(args.latent,
-                           args.rnn_hidd, args.num_layers, batch_first=True)
+                          args.rnn_hidd, args.num_layers, batch_first=True)
         self.gru_last = nn.GRU(args.rnn_hidd + self.embed_dim,
-                                args.rnn_hidd, 1, batch_first=True)
+                               args.rnn_hidd, 1, batch_first=True)
         self.decode_layer_final = nn.Linear(args.rnn_hidd, self.vocab_size)
 
         self.sos_idx = sos_idx
