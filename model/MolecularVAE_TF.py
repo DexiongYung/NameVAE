@@ -4,9 +4,9 @@ import torch.nn.functional as F
 from utilities import DEVICE
 
 
-def vae_loss(x_decoded_mean, x, z_mean, z_sd):
+def vae_loss(x_decoded_mean, x, z_mean, z_log_sd):
     bce_loss = F.binary_cross_entropy(x_decoded_mean, x, reduction='sum')
-    kl_loss = -0.5 * torch.sum(1 + z_sd - z_mean.pow(2) - z_sd.exp())
+    kl_loss = -0.5 * torch.sum(1 + z_log_sd - z_mean.pow(2) - z_log_sd.exp())
     return bce_loss + kl_loss
 
 
@@ -42,9 +42,9 @@ class MolecularVAE(nn.Module):
         self.decoder_layer_start = nn.Linear(
             self.latent_size, self.latent_size)
 
-        self.gru = nn.LSTM(args.latent,
+        self.gru = nn.GRU(args.latent,
                            args.rnn_hidd, args.num_layers, batch_first=True)
-        self.gru_last = nn.LSTM(args.rnn_hidd + self.embed_dim,
+        self.gru_last = nn.GRU(args.rnn_hidd + self.embed_dim,
                                 args.rnn_hidd, 1, batch_first=True)
         self.decode_layer_final = nn.Linear(args.rnn_hidd, self.vocab_size)
 
@@ -73,9 +73,9 @@ class MolecularVAE(nn.Module):
         x4 = F.selu(self.encoder_layer(x3))
         return self.mean_layer(x4), self.sd_layer(x4)
 
-    def sampling(self, z_mean, z_sd):
-        epsilon = self.eps * torch.randn_like(z_sd)
-        return torch.exp(0.5 * z_sd) * epsilon + z_mean
+    def sampling(self, z_mean, z_log_sd):
+        epsilon = self.eps * torch.randn_like(z_log_sd)
+        return torch.exp(0.5 * z_log_sd) * epsilon + z_mean
 
     def decode(self, z, idx_tensor: torch.Tensor = None):
         z = F.selu(self.decoder_layer_start(z))
@@ -120,6 +120,6 @@ class MolecularVAE(nn.Module):
         return y
 
     def forward(self, x, idx_tensor: torch.Tensor = None):
-        z_mean, z_sd = self.encode(x)
-        z = self.sampling(z_mean, z_sd)
-        return self.decode(z, idx_tensor), z_mean, z_sd
+        z_mean, z_log_sd = self.encode(x)
+        z = self.sampling(z_mean, z_log_sd)
+        return self.decode(z, idx_tensor), z_mean, z_log_sd

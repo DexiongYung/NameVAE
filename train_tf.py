@@ -24,14 +24,14 @@ parser.add_argument('--max_name_length',
 parser.add_argument('--batch_size', help='batch_size', type=int, default=400)
 parser.add_argument('--latent', help='latent_size', type=int, default=300)
 parser.add_argument(
-    '--rnn_hidd', help='unit_size of rnn cell', type=int, default=300)
+    '--rnn_hidd', help='unit_size of rnn cell', type=int, default=500)
 parser.add_argument('--mlp_encode', help='MLP encoder size',
                     type=int, default=512)
 parser.add_argument(
-    '--word_embed', help='Word embedding size', type=int, default=100)
+    '--word_embed', help='Word embedding size', type=int, default=200)
 parser.add_argument(
     '--num_layers', help='number of rnn layer', type=int, default=4)
-parser.add_argument('--num_epochs', help='epochs', type=int, default=1000)
+parser.add_argument('--num_epochs', help='epochs', type=int, default=5000)
 parser.add_argument('--conv_kernals', nargs='+', default=[2, 2, 4])
 parser.add_argument('--conv_in_sz', nargs='+', default=[2, 2])
 parser.add_argument('--conv_out_sz', nargs='+', default=[2, 2, 4])
