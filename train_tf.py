@@ -22,22 +22,22 @@ parser.add_argument('--name',
 parser.add_argument('--max_name_length',
                     help='Max name generation length', type=int, default=30)
 parser.add_argument('--batch_size', help='batch_size', type=int, default=400)
-parser.add_argument('--latent', help='latent_size', type=int, default=200)
+parser.add_argument('--latent', help='latent_size', type=int, default=300)
 parser.add_argument(
-    '--rnn_hidd', help='unit_size of rnn cell', type=int, default=812)
+    '--rnn_hidd', help='unit_size of rnn cell', type=int, default=300)
 parser.add_argument('--mlp_encode', help='MLP encoder size',
                     type=int, default=512)
 parser.add_argument(
-    '--word_embed', help='Word embedding size', type=int, default=200)
+    '--word_embed', help='Word embedding size', type=int, default=100)
 parser.add_argument(
-    '--num_layers', help='number of rnn layer', type=int, default=5)
+    '--num_layers', help='number of rnn layer', type=int, default=4)
 parser.add_argument('--num_epochs', help='epochs', type=int, default=1000)
-parser.add_argument('--conv_kernals', nargs='+', default=[4, 4, 16])
-parser.add_argument('--conv_in_sz', nargs='+', default=[4, 4])
-parser.add_argument('--conv_out_sz', nargs='+', default=[4, 4, 5])
+parser.add_argument('--conv_kernals', nargs='+', default=[2, 2, 4])
+parser.add_argument('--conv_in_sz', nargs='+', default=[2, 2])
+parser.add_argument('--conv_out_sz', nargs='+', default=[2, 2, 4])
 parser.add_argument('--eps', help='error from sampling',
                     type=float, default=1e-2)
-parser.add_argument('--lr', help='learning rate', type=float, default=1e-12)
+parser.add_argument('--lr', help='learning rate', type=float, default=1e-6)
 parser.add_argument('--name_file', help='CSVs of names for training and testing',
                     type=str, default='data/first.csv')
 parser.add_argument('--weight_dir', help='save dir',
@@ -97,7 +97,6 @@ if args.continue_train:
     t_args = argparse.Namespace()
     t_args.__dict__.update(json_file)
     args = parser.parse_args(namespace=t_args)
-    model.load(f'{args.weight_dir}/{args.name}')
 
     SOS = args.SOS
     PAD = args.PAD
@@ -129,6 +128,9 @@ save_path = f'{args.weight_dir}/{args.name}.path.tar'
 
 model = MolecularVAE(c_to_n_vocab, sos_idx, pad_idx, args).to(DEVICE)
 optimizer = optim.Adam(model.parameters(), args.lr)
+
+if args.continue_train:
+    model.state_dict.load(torch.load(f'{args.weight_dir}/{args.name}'))
 
 for epoch in range(args.num_epochs):
     train_loss = train()

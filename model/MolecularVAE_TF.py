@@ -6,7 +6,7 @@ from utilities import DEVICE
 
 def vae_loss(x_decoded_mean, x, z_mean, z_sd):
     bce_loss = F.binary_cross_entropy(x_decoded_mean, x, reduction='sum')
-    kl_loss = -0.5 * torch.sum(1 + z_sd - z_mean.pow(2) - z_sd)
+    kl_loss = -0.5 * torch.sum(1 + z_sd - z_mean.pow(2) - z_sd.exp())
     return bce_loss + kl_loss
 
 
@@ -71,11 +71,11 @@ class MolecularVAE(nn.Module):
         x2 = self.selu(self.conv_3(x1))
         x3 = x2.view(x.size(0), -1)
         x4 = F.selu(self.encoder_layer(x3))
-        return self.mean_layer(x4), F.softplus(self.sd_layer(x4))
+        return self.mean_layer(x4), self.sd_layer(x4)
 
     def sampling(self, z_mean, z_sd):
         epsilon = self.eps * torch.randn_like(z_sd)
-        return z_sd * epsilon + z_mean
+        return torch.exp(0.5 * z_sd) * epsilon + z_mean
 
     def decode(self, z, idx_tensor: torch.Tensor = None):
         z = F.selu(self.decoder_layer_start(z))
