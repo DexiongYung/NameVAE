@@ -2,6 +2,7 @@ from model.MolecularVAE_TF import MolecularVAE
 from utilities import *
 import torch
 import numpy as np
+import pandas as pd
 import argparse
 import json
 
@@ -11,7 +12,7 @@ parser.add_argument('--name',
 parser.add_argument('--test_name',
                     help='Person name to test', type=str, default='Michaelz')
 parser.add_argument('--eps', help='error from sampling',
-                    type=float, default=1e-2)
+                    type=float, default=0)
 parser.add_argument('--num_samples', help='Number of samples to take',
                     type=int, default=30)
 args = parser.parse_args()
@@ -55,18 +56,31 @@ model = MolecularVAE(c_to_n_vocab, sos_idx, pad_idx, args).to(DEVICE)
 model.load_state_dict(torch.load(f'{args.weight_dir}/{args.name}.path.tar'))
 
 # If no SOS model have to remove SOS below
-name = (args.test_name).ljust(max_len, PAD)
-idx_name = [c_to_n_vocab[s] for s in name]
-name = (args.test_name).ljust(max_len, PAD)
-name = [c_to_n_vocab[s] for s in name]
-idx_tensor = torch.LongTensor(idx_name).unsqueeze(0).to(DEVICE)
-names_output = torch.LongTensor(name).unsqueeze(0)
-names_output = torch.nn.functional.one_hot(
-    names_output, len(c_to_n_vocab)).type(torch.FloatTensor).to(DEVICE)
+name_list = pd.read_csv('data/dirty.csv').dropna()['0'].tolist()
+min = float('inf')
+max = 0
 
-min_probs = []
-for i in range(args.num_samples):
-    out, min_prob = test(names_output, idx_tensor)
-    min_probs.append(min_prob)
+for curr_name in name_list:
+    name = (curr_name).ljust(max_len, PAD)
+    idx_name = [c_to_n_vocab[s] for s in name]
+    name = [c_to_n_vocab[s] for s in name]
+    idx_tensor = torch.LongTensor(idx_name).unsqueeze(0).to(DEVICE)
+    names_output = torch.LongTensor(name).unsqueeze(0)
+    names_output = torch.nn.functional.one_hot(
+        names_output, len(c_to_n_vocab)).type(torch.FloatTensor).to(DEVICE)
 
-print(np.mean(min_probs))
+    min_probs = []
+    for i in range(args.num_samples):
+        out, min_prob = test(names_output, idx_tensor)
+        min_probs.append(min_prob)
+
+    min_prob = np.mean(min_probs)
+
+    if min > min_prob:
+        min = min_prob
+    
+    if max < min_prob:
+        max = min_prob
+
+print(max)
+print(min)

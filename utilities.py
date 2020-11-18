@@ -3,6 +3,7 @@ import pandas as pd
 import string
 import torch
 import os
+from noiser import Noiser
 from os import path
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -86,3 +87,41 @@ def create_batch(csv_path: str, max_name: int, batch_size: int, vocab: dict, SOS
                 list(map(vocab.get, (name).ljust(seq_length, PAD))))
 
     return one_hot, torch.LongTensor(names_idx)
+
+def create_batch_w_noise(csv_path: str, max_name: int, batch_size: int, vocab: dict, SOS: str, PAD: str):
+    # Name count part of facebook name data and used to create categorical to sample names from to generate batch
+    df = pd.read_csv(csv_path)
+    names_list = df['name'].tolist()
+    probs_list = df['probs'].tolist()
+    distribution = torch.distributions.Categorical(
+        torch.FloatTensor(probs_list))
+    names = [names_list[distribution.sample().item()]
+             for i in range(batch_size)]
+
+    seq_length = len(max(names_list, key=len))
+
+    noiser = Noiser('rae_json/noise_ascii_letters.json')
+
+    noised_names = [noiser.test_sample([n]) for n in names]
+
+    names_input = [(s).ljust(seq_length, PAD) for s in noised_names]
+    names_input = [list(map(vocab.get, s)) for s in names_input]
+    names_input = torch.LongTensor(names_input)
+    one_hot = torch.nn.functional.one_hot(
+        names_input, len(vocab)).type(torch.FloatTensor)
+    
+    labels = [list(map(vocab.get, (name).ljust(seq_length, PAD))) for name in names]
+
+    names_idx = []
+    for name in names:
+        if SOS is not None:
+            name = SOS + name
+
+        if len(name) > seq_length:
+            name = name[:-1]
+            names_idx.append(list(map(vocab.get, name)))
+        else:
+            names_idx.append(
+                list(map(vocab.get, (name).ljust(seq_length, PAD))))
+
+    return one_hot, torch.LongTensor(names_idx), torch.LongTensor(labels)

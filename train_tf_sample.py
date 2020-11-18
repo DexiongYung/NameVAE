@@ -54,13 +54,13 @@ def train():
     train_loss = []
 
     for i in range(int(data_set_size/args.batch_size)):
-        data, idx_data = create_batch(
+        data, idx_data, Y = create_batch_w_noise(
             args.name_file, args.max_name_length, args.batch_size, c_to_n_vocab, None, PAD)
         data = data.to(DEVICE)
         idx_data = idx_data.to(DEVICE)
         optimizer.zero_grad()
         output, mean, logvar = model(data, idx_data)
-        loss = vae_loss(output, data, mean, logvar)
+        loss = vae_loss(output, Y, mean, logvar)
         loss.backward()
         train_loss.append(loss.item())
         optimizer.step()
