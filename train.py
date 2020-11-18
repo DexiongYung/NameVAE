@@ -17,21 +17,26 @@ from utilities import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name',
-                    help='Session name', type=str, default='new_eps')
+                    help='Session name', type=str, default='TF')
 parser.add_argument('--max_name_length',
-                    help='Max name generation length', type=int, default=40)
-parser.add_argument('--batch_size', help='batch_size', type=int, default=100)
-parser.add_argument('--latent_size', help='latent_size', type=int, default=200)
-parser.add_argument('--RNN_hidden_size',
-                    help='unit_size of rnn cell', type=int, default=512)
-parser.add_argument('--word_embed',
-                    help='Word embedding size', type=int, default=200)
+                    help='Max name generation length', type=int, default=30)
+parser.add_argument('--batch_size', help='batch_size', type=int, default=400)
+parser.add_argument('--latent', help='latent_size', type=int, default=300)
 parser.add_argument(
-    '--num_layers', help='number of rnn layer', type=int, default=3)
-parser.add_argument('--num_epochs', help='epochs', type=int, default=1000)
-parser.add_argument('--lr', help='learning rate', type=float, default=0.0001)
+    '--rnn_hidd', help='unit_size of rnn cell', type=int, default=500)
+parser.add_argument('--mlp_encode', help='MLP encoder size',
+                    type=int, default=512)
 parser.add_argument(
-    '--percent_train', help='Percent of the data used for training', type=float, default=0.75)
+    '--word_embed', help='Word embedding size', type=int, default=200)
+parser.add_argument(
+    '--num_layers', help='number of rnn layer', type=int, default=4)
+parser.add_argument('--num_epochs', help='epochs', type=int, default=5000)
+parser.add_argument('--conv_kernals', nargs='+', default=[2, 2, 4])
+parser.add_argument('--conv_in_sz', nargs='+', default=[2, 2])
+parser.add_argument('--conv_out_sz', nargs='+', default=[2, 2, 4])
+parser.add_argument('--eps', help='error from sampling',
+                    type=float, default=1e-2)
+parser.add_argument('--lr', help='learning rate', type=float, default=1e-6)
 parser.add_argument('--name_file', help='CSVs of names for training and testing',
                     type=str, default='data/first.csv')
 parser.add_argument('--weight_dir', help='save dir',
@@ -47,7 +52,7 @@ def train(epoch):
     model.train()
     train_loss = []
     for batch_idx, data in enumerate(train_loader):
-        data = data[0].to(device)
+        data = data[0].to(DEVICE)
         optimizer.zero_grad()
         output, mean, logvar = model(data)
         loss = vae_loss(output, data, mean, logvar)
@@ -55,37 +60,40 @@ def train(epoch):
         train_loss.append(loss.item())
         optimizer.step()
 
-        if batch_idx % save_every == 0:
+        if batch_idx % args.save_every == 0:
             torch.save(model.state_dict(), save_path)
-            plot_losses(train_loss, filename=f'{sess_name}.png')
+            plot_losses(train_loss, filename=f'{args.name}.png')
 
     torch.save(model.state_dict(), save_path)
     print('train', np.mean(train_loss) / len(train_loader.dataset))
     return np.mean(train_loss) / len(train_loader.dataset)
 
 
-data_train, c_to_n_vocab, n_to_c_vocab, max_len, pad_idx = load_dataset(
-    'data/first.csv')
-data_train = torch.utils.data.TensorDataset(data_train)
+PAD = ']'
+SOS = '['
+VOCAB = string.ascii_letters + SOS + PAD
+c_to_n_vocab = dict(zip(VOCAB, range(len(VOCAB))))
+n_to_c_vocab = dict(zip(range(len(VOCAB)), VOCAB))
+sos_idx = c_to_n_vocab[SOS]
+pad_idx = c_to_n_vocab[PAD]
+
+name_in_out = load_dataset(
+    args.name_file, args.max_name_length, c_to_n_vocab, SOS, PAD, False)
+data_train = torch.utils.data.TensorDataset(name_in_out)
 train_loader = torch.utils.data.DataLoader(
-    data_train, batch_size=150, shuffle=True)
+    data_train, batch_size=args.batch_size, shuffle=True)
 
 torch.manual_seed(42)
 
-sess_name = 'no_tf'
-save_every = 100
-epochs = 10000
-weights_folder = 'weight'
+if not path.exists(args.weight_dir):
+    os.mkdir(args.weight_dir)
 
-if not path.exists(weights_folder):
-    os.mkdir(weights_folder)
+save_path = f'{args.weight_dir}/{args.name}.path.tar'
 
-save_path = f'{weights_folder}/{sess_name}.path.tar'
-
-model = MolecularVAE(max_len, c_to_n_vocab).to(device)
+model = MolecularVAE(c_to_n_vocab, sos_idx, pad_idx, args).to(DEVICE)
 # model.load_state_dict(torch.load('weight/test.path.tar'))
-optimizer = optim.Adam(model.parameters(), lr=1e-20)
+optimizer = optim.Adam(model.parameters(), lr=1e-8)
 
 
-for epoch in range(1, epochs + 1):
+for epoch in range(1, args.num_epochs + 1):
     train_loss = train(epoch)
