@@ -39,7 +39,8 @@ def load_dataset(filename: str, max_len: int, c_to_n_vocab: dict, SOS: str, PAD:
         names_idx = []
 
         for name in names:
-            name = SOS + name
+            if SOS is not None:
+                name = SOS + name
 
             if len(name) > max_len:
                 name = name[:-1]
@@ -74,7 +75,8 @@ def create_batch(csv_path: str, max_name: int, batch_size: int, vocab: dict, SOS
 
     names_idx = []
     for name in names:
-        name = SOS + name
+        if SOS is not None:
+            name = SOS + name
 
         if len(name) > seq_length:
             name = name[:-1]
