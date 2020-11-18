@@ -84,7 +84,7 @@ sos_idx = c_to_n_vocab[SOS]
 pad_idx = c_to_n_vocab[PAD]
 
 name_in_out, idx_tensor = load_dataset(
-    args.name_file, args.max_name_length, c_to_n_vocab, SOS, PAD, True)
+    args.name_file, args.max_name_length, c_to_n_vocab, None, PAD, return_idx = True)
 data_train = torch.utils.data.TensorDataset(name_in_out)
 idx_data_train = torch.utils.data.TensorDataset(idx_tensor)
 train_loader = torch.utils.data.DataLoader(

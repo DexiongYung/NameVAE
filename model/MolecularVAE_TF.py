@@ -86,9 +86,7 @@ class MolecularVAE(nn.Module):
             x_embed = self.char_embedder(idx_tensor)
             tf_input = torch.cat((output, x_embed), dim=2)
             all_outs, _ = self.gru_last(tf_input)
-            out_reshape = all_outs.contiguous().view(-1, output.size(-1))
-            y0 = F.softmax(self.decode_layer_final(out_reshape), dim=1)
-            y = y0.contiguous().view(all_outs.size(0), -1, y0.size(-1))
+            y0 = F.softmax(self.decode_layer_final(all_outs), dim=2)
         else:
             batch_sz = z.shape[0]
             char_inputs = torch.LongTensor(

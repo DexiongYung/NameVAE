@@ -22,6 +22,6 @@ name = ('Dylan').ljust(max_len, PAD)
 name = [c_to_n_vocab[s] for s in name]
 names_output = torch.LongTensor(name)
 names_output = torch.nn.functional.one_hot(
-    names_output, len(c_to_n_vocab)).type(torch.FloatTensor).unsqueeze(0).to(device)
+    names_output, len(c_to_n_vocab)).type(torch.FloatTensor).unsqueeze(0).to(DEVICE)
 
 print(test(names_output))

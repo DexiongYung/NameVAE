@@ -18,10 +18,10 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name',
-                    help='Session name', type=str, default='TF_sample_noise')
+                    help='Session name', type=str, default='TF_sample')
 parser.add_argument('--max_name_length',
                     help='Max name generation length', type=int, default=30)
-parser.add_argument('--batch_size', help='batch_size', type=int, default=1)
+parser.add_argument('--batch_size', help='batch_size', type=int, default=300)
 parser.add_argument('--latent', help='latent_size', type=int, default=300)
 parser.add_argument(
     '--rnn_hidd', help='unit_size of rnn cell', type=int, default=500)
@@ -54,13 +54,12 @@ def train():
     train_loss = []
 
     for i in range(int(data_set_size/args.batch_size)):
-        data, idx_data, Y = create_batch_w_noise(
-            args.name_file, args.max_name_length, args.batch_size, c_to_n_vocab, None, PAD)
+        data, idx_data = create_batch(args.name_file, args.max_name_length, args.batch_size, c_to_n_vocab, None, PAD)
         data = data.to(DEVICE)
         idx_data = idx_data.to(DEVICE)
         optimizer.zero_grad()
         output, mean, logvar = model(data, idx_data)
-        loss = vae_loss(output, Y, mean, logvar)
+        loss = vae_loss(output, data, mean, logvar)
         loss.backward()
         train_loss.append(loss.item())
         optimizer.step()
