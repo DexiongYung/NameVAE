@@ -18,7 +18,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name',
-                    help='Session name', type=str, default='TF_sample')
+                    help='Session name', type=str, default='TF_sample_noise')
 parser.add_argument('--max_name_length',
                     help='Max name generation length', type=int, default=30)
 parser.add_argument('--batch_size', help='batch_size', type=int, default=1)
