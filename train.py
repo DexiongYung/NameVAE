@@ -17,7 +17,7 @@ from utilities import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name',
-                    help='Session name', type=str, default='TF')
+                    help='Session name', type=str, default='no_SOS')
 parser.add_argument('--max_name_length',
                     help='Max name generation length', type=int, default=30)
 parser.add_argument('--batch_size', help='batch_size', type=int, default=400)
@@ -78,7 +78,7 @@ sos_idx = c_to_n_vocab[SOS]
 pad_idx = c_to_n_vocab[PAD]
 
 name_in_out = load_dataset(
-    args.name_file, args.max_name_length, c_to_n_vocab, SOS, PAD, False)
+    args.name_file, args.max_name_length, c_to_n_vocab, None, PAD, False)
 data_train = torch.utils.data.TensorDataset(name_in_out)
 train_loader = torch.utils.data.DataLoader(
     data_train, batch_size=args.batch_size, shuffle=True)

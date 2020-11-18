@@ -95,27 +95,23 @@ class MolecularVAE(nn.Module):
                 [self.sos_idx] * batch_sz).to(DEVICE)
             embed_char = self.char_embedder(char_inputs)
             y = None
-            for i in range(self.max_len):
+            for i in range(self.max_name_len):
                 input = torch.cat((output[:, i, :], embed_char), dim=1)
                 if i == 0:
                     out, hn = self.gru_last(input.unsqueeze(1))
                 else:
                     out, hn = self.gru_last(input.unsqueeze(1), hn)
 
-                sm_out = F.softmax(self.decode_layer_final(out), dim=1)
+                sm_out = F.softmax(self.decode_layer_final(out), dim=2)
                 samples = torch.distributions.Categorical(
                     sm_out).sample()
 
                 if i == 0:
                     y = sm_out
                 else:
-                    y = torch.cat(y, sm_out, dim=1)
+                    y = torch.cat((y, sm_out), dim=1)
 
-                embed_char = self.char_embedder(samples)
-
-                y.append(out)
-
-            y = torch.Tensor(y)
+                embed_char = self.char_embedder(samples)[0, :, :]
 
         return y
 
