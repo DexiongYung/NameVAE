@@ -18,10 +18,10 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name',
-                    help='Session name', type=str, default='TF_sample')
+                    help='Session name', type=str, default='TF_sample_LN')
 parser.add_argument('--max_name_length',
                     help='Max name generation length', type=int, default=30)
-parser.add_argument('--batch_size', help='batch_size', type=int, default=16)
+parser.add_argument('--batch_size', help='batch_size', type=int, default=30)
 parser.add_argument('--latent', help='latent_size', type=int, default=300)
 parser.add_argument(
     '--rnn_hidd', help='unit_size of rnn cell', type=int, default=500)
@@ -39,13 +39,13 @@ parser.add_argument('--eps', help='error from sampling',
                     type=float, default=1e-2)
 parser.add_argument('--lr', help='learning rate', type=float, default=1e-6)
 parser.add_argument('--name_file', help='CSVs of names for training and testing',
-                    type=str, default='data/first.csv')
+                    type=str, default='data/last.csv')
 parser.add_argument('--weight_dir', help='save dir',
                     type=str, default='weight/')
 parser.add_argument('--save_every',
                     help='Number of iterations before saving', type=int, default=200)
 parser.add_argument('--continue_train',
-                    help='Continue training', type=bool, default=True)
+                    help='Continue training', type=bool, default=False)
 args = parser.parse_args()
 
 

@@ -56,9 +56,10 @@ def load_dataset(filename: str, max_len: int, c_to_n_vocab: dict, SOS: str, PAD:
         return names_output
 
 
-def create_batch(csv_path: str, max_name: int, batch_size: int, vocab: dict, SOS: str, PAD: str):
+def create_batch(csv_path: str, max_len: int, batch_size: int, vocab: dict, SOS: str, PAD: str):
     # Name count part of facebook name data and used to create categorical to sample names from to generate batch
     df = pd.read_csv(csv_path)
+    df = df[df['name'].str.len() <= max_len]
     names_list = df['name'].tolist()
     probs_list = df['probs'].tolist()
     distribution = torch.distributions.Categorical(
@@ -88,6 +89,7 @@ def create_batch(csv_path: str, max_name: int, batch_size: int, vocab: dict, SOS
 
     return one_hot, torch.LongTensor(names_idx)
 
+
 def create_batch_w_noise(csv_path: str, max_name: int, batch_size: int, vocab: dict, SOS: str, PAD: str):
     # Name count part of facebook name data and used to create categorical to sample names from to generate batch
     df = pd.read_csv(csv_path)
@@ -109,8 +111,9 @@ def create_batch_w_noise(csv_path: str, max_name: int, batch_size: int, vocab: d
     names_input = torch.LongTensor(names_input)
     one_hot = torch.nn.functional.one_hot(
         names_input, len(vocab)).type(torch.FloatTensor)
-    
-    labels = [list(map(vocab.get, (name).ljust(seq_length, PAD))) for name in names]
+
+    labels = [list(map(vocab.get, (name).ljust(seq_length, PAD)))
+              for name in names]
 
     names_idx = []
     for name in names:
