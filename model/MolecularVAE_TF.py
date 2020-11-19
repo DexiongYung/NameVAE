@@ -4,10 +4,11 @@ import torch.nn.functional as F
 from utilities import DEVICE
 
 
-def vae_loss(x_decoded_mean, x, z_mean, z_log_sd):
+def vae_loss(x_decoded_mean, x, z_mean, z_log_sd, batch: int = 1, data_size: int = 1):
+    multiplier = data_size/batch
     bce_loss = F.binary_cross_entropy(x_decoded_mean, x, reduction='average')
     kl_loss = -0.5 * torch.sum(1 + z_log_sd - z_mean.pow(2) - z_log_sd.exp())
-    return bce_loss + kl_loss
+    return multiplier * (bce_loss + kl_loss)
 
 
 class MolecularVAE(nn.Module):
