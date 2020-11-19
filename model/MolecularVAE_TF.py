@@ -5,7 +5,7 @@ from utilities import DEVICE
 
 
 def vae_loss(x_decoded_mean, x, z_mean, z_log_sd):
-    bce_loss = F.binary_cross_entropy(x_decoded_mean, x, reduction='sum')
+    bce_loss = F.binary_cross_entropy(x_decoded_mean, x, reduction='average')
     kl_loss = -0.5 * torch.sum(1 + z_log_sd - z_mean.pow(2) - z_log_sd.exp())
     return bce_loss + kl_loss
 

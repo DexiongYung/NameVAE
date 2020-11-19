@@ -8,9 +8,9 @@ import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name',
-                    help='Session name', type=str, default='TF_sample')
+                    help='Session name', type=str, default='no_SOS')
 parser.add_argument('--test_name',
-                    help='Person name to test', type=str, default='Jinsoo')
+                    help='Person name to test', type=str, default='Michael')
 parser.add_argument('--eps', help='error from sampling',
                     type=float, default=0)
 parser.add_argument('--num_samples', help='Number of samples to take',

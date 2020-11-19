@@ -21,7 +21,7 @@ parser.add_argument('--name',
                     help='Session name', type=str, default='TF_sample')
 parser.add_argument('--max_name_length',
                     help='Max name generation length', type=int, default=30)
-parser.add_argument('--batch_size', help='batch_size', type=int, default=300)
+parser.add_argument('--batch_size', help='batch_size', type=int, default=16)
 parser.add_argument('--latent', help='latent_size', type=int, default=300)
 parser.add_argument(
     '--rnn_hidd', help='unit_size of rnn cell', type=int, default=500)
@@ -45,7 +45,7 @@ parser.add_argument('--weight_dir', help='save dir',
 parser.add_argument('--save_every',
                     help='Number of iterations before saving', type=int, default=200)
 parser.add_argument('--continue_train',
-                    help='Continue training', type=bool, default=False)
+                    help='Continue training', type=bool, default=True)
 args = parser.parse_args()
 
 
