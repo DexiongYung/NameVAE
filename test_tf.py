@@ -8,9 +8,9 @@ import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name',
-                    help='Session name', type=str, default='TF_sample')
+                    help='Session name', type=str, default='TF_sample_LN')
 parser.add_argument('--test_name',
-                    help='Person name to test', type=str, default='Michaelllldd')
+                    help='Person name to test', type=str, default='Yoo')
 parser.add_argument('--eps', help='error from sampling',
                     type=float, default=1e-2)
 parser.add_argument('--num_samples', help='Number of samples to take',
@@ -40,6 +40,7 @@ def run_on_csv(csv_path: str):
 
     for curr_name in name_list:
         min_prob, out = test_on_name(curr_name)
+        min_prob = np.min(min_prob)
 
         if min > min_prob:
             min = min_prob
@@ -77,7 +78,7 @@ def test(test, idx_tensor, is_give_idx: bool = True):
 
     probs = []
     for i in range(output.shape[1]):
-        idx = int(idx_tensor[0, i + 1].item())
+        idx = int(idx_tensor[0, i].item())
 
         if idx == pad_idx:
             break
@@ -94,4 +95,4 @@ def test(test, idx_tensor, is_give_idx: bool = True):
 model = MolecularVAE(c_to_n_vocab, sos_idx, pad_idx, args).to(DEVICE)
 model.load_state_dict(torch.load(f'{args.weight_dir}/{args.name}.path.tar'))
 
-test_on_name(args.test_name)
+run_on_csv('data/dirty.csv')

@@ -67,7 +67,7 @@ def create_batch(csv_path: str, max_len: int, batch_size: int, vocab: dict, SOS:
     names = [names_list[distribution.sample().item()]
              for i in range(batch_size)]
 
-    seq_length = len(max(names_list, key=len))
+    seq_length = max_len
 
     names_input = [(s).ljust(seq_length, PAD) for s in names]
     names_input = [list(map(vocab.get, s)) for s in names_input]

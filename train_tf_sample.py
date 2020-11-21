@@ -59,7 +59,7 @@ def train():
         idx_data = idx_data.to(DEVICE)
         optimizer.zero_grad()
         output, mean, logvar = model(data, idx_data)
-        loss = vae_loss(output, data, mean, logvar)
+        loss = vae_loss(output, data, mean, logvar, args.batch_size, data_set_size)
         loss.backward()
         train_loss.append(loss.item())
         optimizer.step()
